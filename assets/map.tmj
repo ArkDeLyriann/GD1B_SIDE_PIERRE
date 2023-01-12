@@ -16,7 +16,7 @@
          "id":4,
          "image":"E:\/Background pour LD.png",
          "name":"background(remplacer par updates)",
-         "opacity":0.9,
+         "opacity":1,
          "type":"imagelayer",
          "visible":true,
          "x":0,
@@ -83,7 +83,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":6,
+ "nextlayerid":8,
  "nextobjectid":1,
  "orientation":"orthogonal",
  "renderorder":"right-down",
