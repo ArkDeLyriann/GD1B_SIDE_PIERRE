@@ -26,9 +26,7 @@ var config = {
         }
     },
     scene: {
-        preload: preload,
-        create: create,
-        update: update
+        preload: preload, create: create, update: update
     }
 };
 
@@ -42,7 +40,7 @@ var game = new Phaser.Game(config);
 
 function preload ()
 {
-    this.load.image("Phaser_tuilesdejeu", "assets/tuilesJeu.png");
+    this.load.image("Phaser_tuilesdejeu", "assets/tuiles_de_jeu.png");
     this.load.tilemapTiledJSON("carte", "assets/map.json");
     this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
 }
