@@ -40,6 +40,8 @@
     var agrippeMurRight=false;
     
     function preload() {
+
+      this.load.image('bloc', 'assets/Bloc_UI.png');
       // chargement du personnage
       this.load.spritesheet("dude", "assets/perso.png", {
         frameWidth: 32,
@@ -53,6 +55,10 @@
     }
     
     function create() {
+
+      this.add.image(400, 300, 'bloc');
+      
+
       // chargement de la carte du niveau
       const carteDuNiveau = this.add.tilemap("carte");
       // chargement du jeu de tuiles
@@ -120,7 +126,7 @@
       this.physics.world.setBounds(0, 0, 1600, 1600);
       //  ajout du champs de la caméra de taille identique à celle du monde
       this.cameras.main.setBounds(0, 0, 1600, 1600);
-      this.cameras.main.zoom=2.5;
+      this.cameras.main.zoom=1;
       // ancrage de la caméra sur le joueur
       this.cameras.main.startFollow(player);
     }
@@ -168,23 +174,9 @@
         if (player.body.blocked.down) {
           player.setVelocityY(-200);
         }
-        if (player.body.blocked.right) {
-          player.setVelocityY(-200);
-        }
-        if (player.body.blocked.left) {
-          player.setVelocityY(-300);
-          player.setVelocityX(150);
-        } 
           
           
         
-      }
-
-      function wallGrabLeft(){
-                  
-        player.setVelocityY(-35);
-        player.setVelocityX(0);
-      
       }
     }          
   </script>
