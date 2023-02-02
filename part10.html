@@ -36,6 +36,7 @@
     var game = new Phaser.Game(config);
     var player; // variable pour le personnage de jeu
     var cursors; // variable pour le clavier
+    var walljump = true;
     
     function preload() {
       // chargement du personnage
@@ -147,18 +148,37 @@
       if (cursors.up.isDown){
         if (player.body.blocked.down) {
           player.setVelocityY(-200);
-        }
-        if (player.body.blocked.right){
-          player.setVelocityY(-200)
-        }
-        if (player.body.blocked.left){
-          player.setVelocityY(-200)
-        }
-        
+
         
         
       }
-    } 
+    }
+    //Wall Jump
+    if (cursors.up.isDown && player.body.blocked.right || controller.up && player.body.blocked.right) {
+                if (walljump == true) {
+                    walljump = false;
+                    offTouche = true;
+                    setTimeout(cdWallJump, 500);
+                    setTimeout(blocageTouche, 200);
+                    player.setVelocityY(-pDeplacementY);
+                    player.setVelocityX(-50);
+                    setTimeout(cdDJ, 500);
+                }
+            }
+
+            if (cursors.up.isDown && player.body.blocked.left || controller.up && player.body.blocked.left) {
+                if (walljump == true) {
+                    walljump = false;
+                    offTouche = true;
+                    setTimeout(cdWallJump, 500);
+                    setTimeout(blocageTouche, 200);
+                    player.setVelocityY(-pDeplacementY);
+                    player.setVelocityX(50);
+                    setTimeout(cdDJ, 500);
+                }
+            }
+
+          }          
     </script>
   </body>
   </html>
