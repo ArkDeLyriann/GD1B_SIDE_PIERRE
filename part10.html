@@ -16,12 +16,12 @@
     var config = {
       type: Phaser.AUTO,
       // les dimensions de l'écran
-      width: 800,
-      height: 800,
+      width: 1600,
+      height: 1600,
       physics: {
         default: "arcade",
         arcade: {
-          gravity: { y: 300 },
+          gravity: { y: 1100 },
           debug: true
         }
       },
@@ -34,13 +34,15 @@
     
     // création du jeu
     var game = new Phaser.Game(config);
-    var player; // variable pour le personnage de jeu
+    var player;
+    var spikes; // variable pour le personnage de jeu
     var cursors; // variable pour le clavier
     var agrippeMurLeft=false;
     var agrippeMurRight=false;
-    
+    var gameOver = false;
     function preload() {
-
+      this.load.image('spikes', 'assets/spikes.png');
+      
       this.load.image('bloc', 'assets/Bloc_UI.png');
       // chargement du personnage
       this.load.spritesheet("dude", "assets/perso.png", {
@@ -55,10 +57,10 @@
     }
     
     function create() {
-
-      this.add.image(400, 300, 'bloc');
       
-
+      this.add.image(0, 0, 'bloc');
+      
+      
       // chargement de la carte du niveau
       const carteDuNiveau = this.add.tilemap("carte");
       // chargement du jeu de tuiles
@@ -91,8 +93,14 @@
       // création du personnage de jeu et positionnement
       player = this.physics.add.sprite(512, 800, "dude");
       
+
+      const spike1 = this.physics.add.sprite(700, 600, 'spikes').body.allowGravity=false;
+      const spike2 = this.physics.add.sprite(600, 1000, 'spikes').body.allowGravity=false;
+
       // ajout du modèle de collision entre le personnage et les plates-formes
       this.physics.add.collider(player, plateformes);
+      this.physics.add.collider(spike1, plateformes);
+      
       
       // ajout du modèle de collision entre le personnage et le monde
       player.setCollideWorldBounds(true);
@@ -122,6 +130,7 @@
       
       // création d'un écouteur sur le clavier
       cursors = this.input.keyboard.createCursorKeys();
+      clavier = this.input.keyboard.addKeys('Z,Q,D,SPACE');
       // redimentionnement du monde avec les dimensions calculées via tiled
       this.physics.world.setBounds(0, 0, 1600, 1600);
       //  ajout du champs de la caméra de taille identique à celle du monde
@@ -132,53 +141,53 @@
     }
     
     
-    function update() {
-      // définitinon des mouvements du personnage
+    
+    walljump = false
+    function update(){
       
+
+
+      if (gameOver){return;}
       
-      // a gauche
-      if (cursors.left.isDown) {
-        if (!player.body.blocked.left){
-          player.setVelocityX(-160);
-          player.anims.play("left", true);
-        }
-        else{
-          player.setVelocityY(-8);
-          player.setVelocityX(0);
-          agrippeMurLeft = true
-        }
-        // à droite
+      if (cursors.left.isDown && walljump==false || clavier.Q.isDown && walljump==false){ //si la touche gauche est appuyée
+        player.setVelocityX(-160); //alors vitesse négative en X
+        player.anims.play('left', true); //et animation => gauche
       }
-      else if (cursors.right.isDown) {
-        if (!player.body.blocked.right){
-          player.setVelocityX(160);
-          player.anims.play("right", true);
-        }
-        else if (agrippeMurLeft == true){
-          player.setVelocityX(160);
-          
-        }
-        else{
-          player.setVelocityY(-8);
-          player.setVelocityX(0);
-          agrippeMurRight = true
-        }
+      else if (cursors.right.isDown && walljump==false || clavier.D.isDown && walljump==false ){ //sinon si la touche droite est appuyée
+        player.setVelocityX(160); //alors vitesse positive en X
+        player.anims.play('right',true); //et animation => droite
       }
-      // immobile
-      else {
-        player.setVelocityX(0);
-        player.anims.play("turn");
+      else if (walljump==false ){ 
+        player.setVelocityX(0); //vitesse nulle
+        player.anims.play('turn'); //animation fait face caméra
       }
-      // en saut (important : blocked doown au lieu de tuoching down)
-      if (cursors.up.isDown){
-        if (player.body.blocked.down) {
-          player.setVelocityY(-200);
-        }
-          
-          
-        
+      // Comportement - Joueur
+      // Je gère la touche de saut de mon joueur
+      if(cursors.up.isDown && player.body.onFloor() || clavier.SPACE.isDown && player.body.onFloor() || clavier.Z.isDown && player.body.onFloor()){
+        //si touche haut appuyée ET que le perso touche le sol
+        player.setVelocityY(-450); 
       }
-    }          
+      //Walljump
+      if(cursors.left.isDown && cursors.up.isDown && player.body.onWall() && walljump==false || clavier.Q.isDown && clavier.SPACE.isDown && player.body.onWall() && walljump==false || clavier.Q.isDown && clavier.Z.isDown && player.body.onWall() && walljump==false){
+        walljump=true
+        player.setVelocityX(160);
+        player.setVelocityY(-450);
+        player.anims.play("right", true)
+        setTimeout(() => {
+          walljump=false
+        }, 300);
+      }
+      if(cursors.right.isDown && cursors.up.isDown && player.body.onWall() && walljump==false|| clavier.D.isDown && clavier.SPACE.isDown && player.body.onWall() && walljump==false|| clavier.D.isDown && clavier.Z.isDown && player.body.onWall() && walljump==false ){
+        walljump=true
+        player.setVelocityX(-160);
+        player.setVelocityY(-450);
+        player.anims.play("left", true)
+        setTimeout(() => {
+          walljump=false
+        }, 300);
+      }
+    }
+    
   </script>
 </body>
 </html>
