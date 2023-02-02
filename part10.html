@@ -36,7 +36,8 @@
     var game = new Phaser.Game(config);
     var player; // variable pour le personnage de jeu
     var cursors; // variable pour le clavier
-    var walljump = true;
+    var agrippeMurLeft=false;
+    var agrippeMurRight=false;
     
     function preload() {
       // chargement du personnage
@@ -131,54 +132,61 @@
       
       // a gauche
       if (cursors.left.isDown) {
-        player.setVelocityX(-160);
-        player.anims.play("left", true);
-        
+        if (!player.body.blocked.left){
+          player.setVelocityX(-160);
+          player.anims.play("left", true);
+        }
+        else{
+          player.setVelocityY(-8);
+          player.setVelocityX(0);
+          agrippeMurLeft = true
+        }
         // à droite
-      } else if (cursors.right.isDown) {
-        player.setVelocityX(160);
-        player.anims.play("right", true);
+      }
+      else if (cursors.right.isDown) {
+        if (!player.body.blocked.right){
+          player.setVelocityX(160);
+          player.anims.play("right", true);
+        }
+        else if (agrippeMurLeft == true){
+          player.setVelocityX(160);
+          
+        }
+        else{
+          player.setVelocityY(-8);
+          player.setVelocityX(0);
+          agrippeMurRight = true
+        }
       }
       // immobile
       else {
-       player.setVelocityX(0);
+        player.setVelocityX(0);
         player.anims.play("turn");
       }
       // en saut (important : blocked doown au lieu de tuoching down)
       if (cursors.up.isDown){
         if (player.body.blocked.down) {
           player.setVelocityY(-200);
-
-        
+        }
+        if (player.body.blocked.right) {
+          player.setVelocityY(-200);
+        }
+        if (player.body.blocked.left) {
+          player.setVelocityY(-300);
+          player.setVelocityX(150);
+        } 
+          
+          
         
       }
-    }
-    //Wall Jump
-    if (cursors.up.isDown && player.body.blocked.right || controller.up && player.body.blocked.right) {
-                if (walljump == true) {
-                    walljump = false;
-                    offTouche = true;
-                    setTimeout(cdWallJump, 500);
-                    setTimeout(blocageTouche, 200);
-                    player.setVelocityY(-pDeplacementY);
-                    player.setVelocityX(-50);
-                    setTimeout(cdDJ, 500);
-                }
-            }
 
-            if (cursors.up.isDown && player.body.blocked.left || controller.up && player.body.blocked.left) {
-                if (walljump == true) {
-                    walljump = false;
-                    offTouche = true;
-                    setTimeout(cdWallJump, 500);
-                    setTimeout(blocageTouche, 200);
-                    player.setVelocityY(-pDeplacementY);
-                    player.setVelocityX(50);
-                    setTimeout(cdDJ, 500);
-                }
-            }
-
-          }          
-    </script>
-  </body>
-  </html>
+      function wallGrabLeft(){
+                  
+        player.setVelocityY(-35);
+        player.setVelocityX(0);
+      
+      }
+    }          
+  </script>
+</body>
+</html>
