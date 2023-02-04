@@ -17,11 +17,11 @@
       type: Phaser.AUTO,
       // les dimensions de l'écran
       width: 1600,
-      height: 1600,
+      height: 800,
       physics: {
         default: "arcade",
         arcade: {
-          gravity: { y: 1100 },
+          gravity: { y: 1000 },
           debug: true
         }
       },
@@ -47,9 +47,34 @@
    
 
     function preload() {
+      //chargement des assets de jeu
+      //pics
       this.load.image('spikes', 'assets/spikes.png');
-      
+      //background de l'interface
       this.load.image('bloc', 'assets/Bloc_UI.png');
+      // objets à ramasser
+      this.load.image('poigne', 'assets/Loot_handle_shovel.png');
+      this.load.image('manche', 'assets/Loot_pole_shovel.png');
+      this.load.image('lame', 'assets/Loot_blade_shovel.png');
+      //Barre de points de vie sous forme de spritesheet
+      this.load.spritesheet('healthBar', 'assets/HP_Spritesheet.png', {
+        frameWidth: 32,
+        frameHeight: 64,
+      });
+
+      //Indicateur de complétion du niveau sous forme de spritesheet aussi
+
+      this.load.spritesheet('quest','assets/Collecte_Spritesheet.png', {
+        frameWidth: 32,
+        frameHeight: 96,
+      });
+
+      //ennemi présent dans le niveau
+      this.load.spritesheet('ennemy','assets/Ennemi_Spritesheet.png', {
+        frameWidth: 64,
+        frameHeight: 64,
+      });
+
       // chargement du personnage
       this.load.spritesheet("dude", "assets/perso.png", {
         frameWidth: 32,
@@ -148,7 +173,51 @@
       this.cameras.main.startFollow(player);
       // création de l'interface
       //D'abord le background de l'interface
-      hud = this.add.sprite(600, 590, 'bloc').setScrollFactor(0);
+      hud = this.add.sprite(600, 260, 'bloc').setScrollFactor(0);
+
+      //La barre de vie
+      barreVie = this.add.sprite(450 , 262, 'healthBar').setScrollFactor(0);
+      barreVie.setScale(1.36);
+
+      //Les animations de la barre de vie ( 1 pour chaque état de vie du joueur)
+      //vie pleine
+      this.anims.create({
+        key: "full",
+        frames: [{ key: "healthBar", frame: 0 }],
+        frameRate: 20
+      });
+      // 1 pv perdu
+      this.anims.create({
+        key: "1hit",
+        frames: [{ key: "healthBar", frame: 1 }],
+        frameRate: 20
+      });
+      // 2 pv perdus
+      this.anims.create({
+        key: "2hit",
+        frames: [{ key: "healthBar", frame: 2 }],
+        frameRate: 20
+      });
+      // 3 pv perdus
+      this.anims.create({
+        key: "3hit",
+        frames: [{ key: "healthBar", frame: 3 }],
+        frameRate: 20
+      });
+      // 4 pv perdus
+      this.anims.create({
+        key: "4hit",
+        frames: [{ key: "healthBar", frame: 4 }],
+        frameRate: 20
+      });
+
+
+
+      // Le trackeur de rammasage des objets du niveau
+      quete = this.add.sprite(650 , 260, 'quest').setScrollFactor(0);      
+      quete.setScale(2);
+      quete.setAngle(90);
+
     }
     
     
@@ -157,17 +226,40 @@
 
 
     function update(){
+
       
       
       
-      if (playerHP<=0){return;}
+
+
+      //Vérification des pv du joueur et changement de la barre de vie
+
+      if (playerHP == 4){
+        barreVie.anims.play('full');
+      }
+      else if (playerHP == 3){
+        barreVie.anims.play('1hit');
+      }
+      else if (playerHP == 2){
+        barreVie.anims.play('2hit');
+      }
+      else if (playerHP == 1){
+        barreVie.anims.play('3hit');
+      }
+      else if (playerHP == 0){
+        barreVie.anims.play('4hit');
+        return;
+      }
       
+
+      // CONTROLES
+
       if (cursors.left.isDown && walljump==false || clavier.Q.isDown && walljump==false){ //si la touche gauche est appuyée
-        player.setVelocityX(-160); //alors vitesse négative en X
+        player.setVelocityX(-180); //alors vitesse négative en X
         player.anims.play('left', true); //et animation => gauche
       }
       else if (cursors.right.isDown && walljump==false || clavier.D.isDown && walljump==false ){ //sinon si la touche droite est appuyée
-        player.setVelocityX(160); //alors vitesse positive en X
+        player.setVelocityX(180); //alors vitesse positive en X
         player.anims.play('right',true); //et animation => droite
       }
       else if (walljump==false ){ 
@@ -178,13 +270,13 @@
       // Je gère la touche de saut de mon joueur
       if(cursors.up.isDown && player.body.onFloor() || clavier.SPACE.isDown && player.body.onFloor() || clavier.Z.isDown && player.body.onFloor()){
         //si touche haut appuyée ET que le perso touche le sol
-        player.setVelocityY(-450); 
+        player.setVelocityY(-400); 
       }
       //Walljump
       if(cursors.left.isDown && cursors.up.isDown && player.body.onWall() && walljump==false || clavier.Q.isDown && clavier.SPACE.isDown && player.body.onWall() && walljump==false || clavier.Q.isDown && clavier.Z.isDown && player.body.onWall() && walljump==false){
         walljump=true
         player.setVelocityX(160);
-        player.setVelocityY(-450);
+        player.setVelocityY(-350);
         player.anims.play("right", true)
         setTimeout(() => {
           walljump=false
@@ -193,7 +285,7 @@
       if(cursors.right.isDown && cursors.up.isDown && player.body.onWall() && walljump==false|| clavier.D.isDown && clavier.SPACE.isDown && player.body.onWall() && walljump==false|| clavier.D.isDown && clavier.Z.isDown && player.body.onWall() && walljump==false ){
         walljump=true
         player.setVelocityX(-160);
-        player.setVelocityY(-450);
+        player.setVelocityY(-350);
         player.anims.play("left", true)
         setTimeout(() => {
           walljump=false
@@ -203,6 +295,7 @@
     
     function mortPics(){
       playerHP -=4;
+      player.anims.play('turn');
     }
     
     
