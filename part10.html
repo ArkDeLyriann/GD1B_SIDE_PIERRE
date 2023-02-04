@@ -60,6 +60,9 @@
       
       this.add.image(0, 0, 'bloc');
       
+
+
+      
       
       // chargement de la carte du niveau
       const carteDuNiveau = this.add.tilemap("carte");
@@ -86,6 +89,12 @@
       "calque_plateformes",
       tileset
       );
+
+      pics = this.physics.add.group();
+                calque_pics = carteDuNiveau.getObjectLayer('pics');
+                calque_pics.objects.forEach( calque_pics => {
+                    const creer_pics = pics.create( calque_pics.x+16, calque_pics.y +16, "spikes").body.setAllowGravity(false).setImmovable(true);
+                });
       
       // définition des objets solides avec lesquels le personnage va se cogner
       plateformes.setCollisionByProperty({ estSolide: true });
