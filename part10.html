@@ -118,26 +118,31 @@
       "calque_plateformes",
       tileset
       );
+
+      
+      // les plateformes sont solides
+      plateformes.setCollisionByProperty({ estSolide: true });
+
+
+      // spawn personnage
+      player = this.physics.add.sprite(512, 800, "dude");
+      
+      
+      // le personnage ne traverse pas les plateformes
+      this.physics.add.collider(player, plateformes);
+      
+      // le personnage ne peut pas sortir du monde
+      player.setCollideWorldBounds(true);
+
       //Création des pics à partir du calque dédié dans le json
       pics = this.physics.add.group();
       calque_pics = carteDuNiveau.getObjectLayer('pics');
       calque_pics.objects.forEach( calque_pics => {
         const creer_pics = pics.create( calque_pics.x+16, calque_pics.y +16, "spikes").body.setAllowGravity(false).setImmovable(true);
       });
-      
-      // les plateformes sont solides
-      plateformes.setCollisionByProperty({ estSolide: true });
-      
-      // spawn personnage
-      player = this.physics.add.sprite(512, 800, "dude");
-      
-      
-      // le personnage ne traverse pas les plateformes et les pics
-      this.physics.add.collider(player, plateformes);
-      //et s'il touche les pics il meurt
+
+      //le player ne traverse pas les pics et s'il les touche il meurt
       this.physics.add.collider(player, pics, mortPics, null, this);
-      // le personnage ne peut pas sortir du monde
-      player.setCollideWorldBounds(true);
       
       // animation pour tourner à gauche
       this.anims.create({
@@ -237,7 +242,7 @@
       // on fait en sorte que quand le joueur passe sur les objets, ils disparaissent.
       this.physics.add.overlap(poignee, player, ramassePoignee, null, this);
 
-      
+
       // création d'un écouteur sur le clavier
       cursors = this.input.keyboard.createCursorKeys();
       clavier = this.input.keyboard.addKeys('Z,Q,D,SPACE');
