@@ -251,6 +251,9 @@
         return;
       }
       
+      if (playerHP<=0){
+        return;
+      }
 
       // CONTROLES
 
@@ -294,7 +297,8 @@
     }
     
     function mortPics(){
-      playerHP -=4;
+      playerHP -=1;
+      player.setVelocityY(-450);
       player.anims.play('turn');
     }
     
