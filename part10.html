@@ -103,13 +103,8 @@
       player = this.physics.add.sprite(512, 800, "dude");
       
 
-      const spike1 = this.physics.add.sprite(700, 600, 'spikes').body.allowGravity=false;
-      const spike2 = this.physics.add.sprite(600, 1000, 'spikes').body.allowGravity=false;
-
       // ajout du modèle de collision entre le personnage et les plates-formes
       this.physics.add.collider(player, plateformes);
-      this.physics.add.collider(spike1, plateformes);
-      
       
       // ajout du modèle de collision entre le personnage et le monde
       player.setCollideWorldBounds(true);
