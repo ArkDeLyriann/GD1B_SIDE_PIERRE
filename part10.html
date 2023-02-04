@@ -35,11 +35,17 @@
     // création du jeu
     var game = new Phaser.Game(config);
     var player;
+    var playerHP = 4;
+    var hud;
     var spikes; // variable pour le personnage de jeu
     var cursors; // variable pour le clavier
     var agrippeMurLeft=false;
     var agrippeMurRight=false;
     var gameOver = false;
+    var walljump = false
+    
+   
+
     function preload() {
       this.load.image('spikes', 'assets/spikes.png');
       
@@ -54,14 +60,17 @@
       
       // chargement de la carte
       this.load.tilemapTiledJSON("carte", "assets/map.json");
+      
+      
+      
     }
+    
+    
     
     function create() {
       
-      this.add.image(0, 0, 'bloc');
       
-
-
+      
       
       
       // chargement de la carte du niveau
@@ -72,29 +81,24 @@
       "Phaser_tuilesdejeu"
       );
       
-      // chargement du calque "calque_backgroung"
+      // chargement du calque "calque_background"
       const backgroundLayer = carteDuNiveau.createLayer(
       "calque_background",
       tileset
       );
       
-      // chargement du second calque "calque_backgroung"
-      //const backgroundLayer2 = carteDuNiveau.createStaticLayer(
-      //"calque_background_2",
-      //tileset
-      //);
       
       // chargement du calque "calque_plateformes""
       const plateformes = carteDuNiveau.createLayer(
       "calque_plateformes",
       tileset
       );
-
+      //Création des pics à partir du calque dédié dans le json
       pics = this.physics.add.group();
-                calque_pics = carteDuNiveau.getObjectLayer('pics');
-                calque_pics.objects.forEach( calque_pics => {
-                    const creer_pics = pics.create( calque_pics.x+16, calque_pics.y +16, "spikes").body.setAllowGravity(false).setImmovable(true);
-                });
+      calque_pics = carteDuNiveau.getObjectLayer('pics');
+      calque_pics.objects.forEach( calque_pics => {
+        const creer_pics = pics.create( calque_pics.x+16, calque_pics.y +16, "spikes").body.setAllowGravity(false).setImmovable(true);
+      });
       
       // définition des objets solides avec lesquels le personnage va se cogner
       plateformes.setCollisionByProperty({ estSolide: true });
@@ -102,10 +106,10 @@
       // création du personnage de jeu et positionnement
       player = this.physics.add.sprite(512, 800, "dude");
       
-
+      
       // ajout du modèle de collision entre le personnage et les plates-formes
       this.physics.add.collider(player, plateformes);
-      
+      this.physics.add.collider(player, pics, mortPics, null, this);
       // ajout du modèle de collision entre le personnage et le monde
       player.setCollideWorldBounds(true);
       
@@ -139,19 +143,24 @@
       this.physics.world.setBounds(0, 0, 1600, 1600);
       //  ajout du champs de la caméra de taille identique à celle du monde
       this.cameras.main.setBounds(0, 0, 1600, 1600);
-      this.cameras.main.zoom=1;
+      this.cameras.main.zoom=2;
       // ancrage de la caméra sur le joueur
       this.cameras.main.startFollow(player);
+      // création de l'interface
+      //D'abord le background de l'interface
+      hud = this.add.sprite(600, 590, 'bloc').setScrollFactor(0);
     }
     
     
     
-    walljump = false
+    
+
+
     function update(){
       
-
-
-      if (gameOver){return;}
+      
+      
+      if (playerHP<=0){return;}
       
       if (cursors.left.isDown && walljump==false || clavier.Q.isDown && walljump==false){ //si la touche gauche est appuyée
         player.setVelocityX(-160); //alors vitesse négative en X
@@ -191,6 +200,11 @@
         }, 300);
       }
     }
+    
+    function mortPics(){
+      playerHP -=4;
+    }
+    
     
   </script>
 </body>
