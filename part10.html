@@ -37,13 +37,13 @@
     var player;
     var playerHP = 4;
     var hud;
-    var spikes; // variable pour le personnage de jeu
-    var cursors; // variable pour le clavier
+    var spikes; 
+    var cursors; 
     var agrippeMurLeft=false;
     var agrippeMurRight=false;
     var gameOver = false;
-    var walljump = false
-    
+    var walljump = false;
+    var etatQuete = 0;
    
 
     function preload() {
@@ -98,22 +98,22 @@
       
       
       
-      // chargement de la carte du niveau
+      // on load le tiled
       const carteDuNiveau = this.add.tilemap("carte");
-      // chargement du jeu de tuiles
+      // on load l'image liée au tiled
       const tileset = carteDuNiveau.addTilesetImage(
       "tuiles_de_jeu",
       "Phaser_tuilesdejeu"
       );
       
-      // chargement du calque "calque_background"
+      // création du background a partir du tiles
       const backgroundLayer = carteDuNiveau.createLayer(
       "calque_background",
       tileset
       );
       
       
-      // chargement du calque "calque_plateformes""
+      // création des plateforme a partir du tiled
       const plateformes = carteDuNiveau.createLayer(
       "calque_plateformes",
       tileset
@@ -125,17 +125,18 @@
         const creer_pics = pics.create( calque_pics.x+16, calque_pics.y +16, "spikes").body.setAllowGravity(false).setImmovable(true);
       });
       
-      // définition des objets solides avec lesquels le personnage va se cogner
+      // les plateformes sont solides
       plateformes.setCollisionByProperty({ estSolide: true });
       
-      // création du personnage de jeu et positionnement
+      // spawn personnage
       player = this.physics.add.sprite(512, 800, "dude");
       
       
-      // ajout du modèle de collision entre le personnage et les plates-formes
+      // le personnage ne traverse pas les plateformes et les pics
       this.physics.add.collider(player, plateformes);
+      //et s'il touche les pics il meurt
       this.physics.add.collider(player, pics, mortPics, null, this);
-      // ajout du modèle de collision entre le personnage et le monde
+      // le personnage ne peut pas sortir du monde
       player.setCollideWorldBounds(true);
       
       // animation pour tourner à gauche
@@ -161,17 +162,7 @@
         repeat: -1
       });
       
-      // création d'un écouteur sur le clavier
-      cursors = this.input.keyboard.createCursorKeys();
-      clavier = this.input.keyboard.addKeys('Z,Q,D,SPACE');
-      // redimentionnement du monde avec les dimensions calculées via tiled
-      this.physics.world.setBounds(0, 0, 1600, 1600);
-      //  ajout du champs de la caméra de taille identique à celle du monde
-      this.cameras.main.setBounds(0, 0, 1600, 1600);
-      this.cameras.main.zoom=2;
-      // ancrage de la caméra sur le joueur
-      this.cameras.main.startFollow(player);
-      // création de l'interface
+           // création de l'interface
       //D'abord le background de l'interface
       hud = this.add.sprite(600, 260, 'bloc').setScrollFactor(0);
 
@@ -218,6 +209,58 @@
       quete.setScale(2);
       quete.setAngle(90);
 
+      //création des objets à ramasser
+      poignee = this.physics.add.group();
+      handle = carteDuNiveau.getObjectLayer('handle');
+      handle.objects.forEach( handle => {
+        const creer_poignee = poignee.create( handle.x+16, handle.y +16, "poigne").body.setAllowGravity(true).setImmovable(false);
+      });
+
+      manche = this.physics.add.group();
+      pole = carteDuNiveau.getObjectLayer('pole');
+      pole.objects.forEach( handle => {
+        const creer_manche = manche.create( pole.x+16, pole.y +16, "manche").body.setAllowGravity(true).setImmovable(false);
+      });
+
+      pelle = this.physics.add.group();
+      blade = carteDuNiveau.getObjectLayer('blade');
+      blade.objects.forEach( handle => {
+        const creer_pelle = pelle.create( blade.x+16, blade.y +16, "lame").body.setAllowGravity(true).setImmovable(false);
+      });
+      
+      // on les empeche de traverser les plateformes
+      this.physics.add.collider(poignee, plateformes);
+      this.physics.add.collider(manche, plateformes);
+      this.physics.add.collider(pelle, plateformes);
+
+
+      // on fait en sorte que quand le joueur passe sur les objets, ils disparaissent.
+      this.physics.add.overlap(poignee, player, ramassePoignee, null, this);
+
+      
+      // création d'un écouteur sur le clavier
+      cursors = this.input.keyboard.createCursorKeys();
+      clavier = this.input.keyboard.addKeys('Z,Q,D,SPACE');
+      
+      
+      
+      
+      
+      // redimentionnement du monde avec les dimensions calculées via tiled
+      this.physics.world.setBounds(0, 0, 1600, 1600);
+      //  ajout du champs de la caméra de taille identique à celle du monde
+      this.cameras.main.setBounds(0, 0, 1600, 1600);
+      this.cameras.main.zoom=2;
+      // ancrage de la caméra sur le joueur
+      this.cameras.main.startFollow(player);
+      
+      
+      
+      
+      
+      
+
+
     }
     
     
@@ -227,9 +270,6 @@
 
     function update(){
 
-      
-      
-      
 
 
       //Vérification des pv du joueur et changement de la barre de vie
@@ -296,12 +336,27 @@
       }
     }
     
-    function mortPics(){
+    //fonction de mort instantanée sur les pics
+    function mortPics(player, playerHP){
       playerHP -=1;
       player.setVelocityY(-450);
       player.anims.play('turn');
     }
     
+
+    //fonctions qui font disparaitre les objets
+    function ramassePoignee(player, poignee){
+      poignee.disableBody(true, true);
+
+    }
+    function ramasseManche(player, manche){
+      manche.disableBody(true, true);
+
+    }
+    function ramassePelle(player, pelle){
+      pelle.disableBody(true, true);
+
+    }
     
   </script>
 </body>
