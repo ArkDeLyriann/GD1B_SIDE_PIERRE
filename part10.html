@@ -22,7 +22,7 @@
         default: "arcade",
         arcade: {
           gravity: { y: 1000 },
-          debug: true
+          debug: false
         }
       },
       scene: {
@@ -32,6 +32,11 @@
       }
     };
     
+    // Les pics ons cessé de fonctionner après l'implémentation des objets à ramasser, qui eux ne fonctionnent pas non plus. Et la console n'affiche aucune erreur une fois dans le navigateur.
+
+
+
+
     // création du jeu
     var game = new Phaser.Game(config);
     var player;
@@ -44,8 +49,7 @@
     var gameOver = false;
     var walljump = false;
     var etatQuete = 0;
-   
-
+    
     function preload() {
       //chargement des assets de jeu
       //pics
@@ -61,20 +65,20 @@
         frameWidth: 32,
         frameHeight: 64,
       });
-
+      
       //Indicateur de complétion du niveau sous forme de spritesheet aussi
-
+      
       this.load.spritesheet('quest','assets/Collecte_Spritesheet.png', {
         frameWidth: 32,
         frameHeight: 96,
       });
-
+      
       //ennemi présent dans le niveau
       this.load.spritesheet('ennemy','assets/Ennemi_Spritesheet.png', {
         frameWidth: 64,
         frameHeight: 64,
       });
-
+      
       // chargement du personnage
       this.load.spritesheet("dude", "assets/perso.png", {
         frameWidth: 32,
@@ -118,12 +122,12 @@
       "calque_plateformes",
       tileset
       );
-
+      
       
       // les plateformes sont solides
       plateformes.setCollisionByProperty({ estSolide: true });
-
-
+      
+      
       // spawn personnage
       player = this.physics.add.sprite(512, 800, "dude");
       
@@ -131,17 +135,19 @@
       // le personnage ne traverse pas les plateformes
       this.physics.add.collider(player, plateformes);
       
+
+
       // le personnage ne peut pas sortir du monde
       player.setCollideWorldBounds(true);
-
+      
       //Création des pics à partir du calque dédié dans le json
       pics = this.physics.add.group();
       calque_pics = carteDuNiveau.getObjectLayer('pics');
       calque_pics.objects.forEach( calque_pics => {
         const creer_pics = pics.create( calque_pics.x+16, calque_pics.y +16, "spikes").body.setAllowGravity(false).setImmovable(true);
       });
-
-      //le player ne traverse pas les pics et s'il les touche il meurt
+      
+      //le player ne traverse pas les pics et s'il les touche il meurt (Ce collider fonctionnait jusqu'a ce que j'ajoute les objets à ramasser.)
       this.physics.add.collider(player, pics, mortPics, null, this);
       
       // animation pour tourner à gauche
@@ -167,14 +173,14 @@
         repeat: -1
       });
       
-           // création de l'interface
+      // création de l'interface
       //D'abord le background de l'interface
       hud = this.add.sprite(600, 260, 'bloc').setScrollFactor(0);
-
+      
       //La barre de vie
       barreVie = this.add.sprite(450 , 262, 'healthBar').setScrollFactor(0);
       barreVie.setScale(1.36);
-
+      
       //Les animations de la barre de vie ( 1 pour chaque état de vie du joueur)
       //vie pleine
       this.anims.create({
@@ -206,27 +212,54 @@
         frames: [{ key: "healthBar", frame: 4 }],
         frameRate: 20
       });
-
-
-
+      
+      
+      
       // Le trackeur de rammasage des objets du niveau
       quete = this.add.sprite(650 , 260, 'quest').setScrollFactor(0);      
       quete.setScale(2);
       quete.setAngle(90);
 
+      // les animations de la spritesheet de la barre de complétion
+      this.anims.create({
+        key: "empty",
+        frames: [{ key: "quest", frame: 0 }],
+        frameRate: 20
+      });
+      // 1 pv perdu
+      this.anims.create({
+        key: "handleGot",
+        frames: [{ key: "quest", frame: 1 }],
+        frameRate: 20
+      });
+      // 2 pv perdus
+      this.anims.create({
+        key: "poleGot",
+        frames: [{ key: "quest", frame: 2 }],
+        frameRate: 20
+      });
+      // 3 pv perdus
+      this.anims.create({
+        key: "bladeGot",
+        frames: [{ key: "quest", frame: 3 }],
+        frameRate: 20
+      });
+
+
+      
       //création des objets à ramasser
       poignee = this.physics.add.group();
       handle = carteDuNiveau.getObjectLayer('handle');
       handle.objects.forEach( handle => {
         const creer_poignee = poignee.create( handle.x+16, handle.y +16, "poigne").body.setAllowGravity(true).setImmovable(false);
       });
-
+      
       manche = this.physics.add.group();
       pole = carteDuNiveau.getObjectLayer('pole');
       pole.objects.forEach( handle => {
         const creer_manche = manche.create( pole.x+16, pole.y +16, "manche").body.setAllowGravity(true).setImmovable(false);
       });
-
+      
       pelle = this.physics.add.group();
       blade = carteDuNiveau.getObjectLayer('blade');
       blade.objects.forEach( handle => {
@@ -237,18 +270,20 @@
       this.physics.add.collider(poignee, plateformes);
       this.physics.add.collider(manche, plateformes);
       this.physics.add.collider(pelle, plateformes);
-
-
+      
+      
       // on fait en sorte que quand le joueur passe sur les objets, ils disparaissent.
       this.physics.add.overlap(poignee, player, ramassePoignee, null, this);
-
-
+      this.physics.add.overlap(manche, player, ramasseManche, null, this);
+      this.physics.add.overlap(pelle, player, ramassePelle, null, this);
+      
+      
       // création d'un écouteur sur le clavier
       cursors = this.input.keyboard.createCursorKeys();
       clavier = this.input.keyboard.addKeys('Z,Q,D,SPACE');
       
       
-      
+
       
       
       // redimentionnement du monde avec les dimensions calculées via tiled
@@ -264,21 +299,21 @@
       
       
       
-
-
+      
+      
     }
     
     
     
     
-
-
+    
+    
     function update(){
-
-
-
+      
+      
+      
       //Vérification des pv du joueur et changement de la barre de vie
-
+      
       if (playerHP == 4){
         barreVie.anims.play('full');
       }
@@ -296,12 +331,29 @@
         return;
       }
       
-      if (playerHP<=0){
+
+      //Vérification de la quête et changement de la barre de complétion
+      if (quete == 0){
+        barreVie.anims.play('empty');
+      }
+      else if (quete == 1){
+        barreVie.anims.play('handleGot');
+      }
+      else if (quete == 2){
+        barreVie.anims.play('poleGot');
+      }
+      else if (quete == 3){
+        barreVie.anims.play('bladeGot');
         return;
       }
 
-      // CONTROLES
 
+      if (playerHP<=0){
+        return;
+      }
+      
+      // CONTROLES
+      
       if (cursors.left.isDown && walljump==false || clavier.Q.isDown && walljump==false){ //si la touche gauche est appuyée
         player.setVelocityX(-180); //alors vitesse négative en X
         player.anims.play('left', true); //et animation => gauche
@@ -342,25 +394,25 @@
     }
     
     //fonction de mort instantanée sur les pics
-    function mortPics(player, playerHP){
-      playerHP -=1;
-      player.setVelocityY(-450);
-      player.anims.play('turn');
+    function mortPics(){
+      playerHP -=4;
+      debugg +=1;
     }
     
-
+    
     //fonctions qui font disparaitre les objets
     function ramassePoignee(player, poignee){
-      poignee.disableBody(true, true);
-
+      this.poignee.setVisibility(false);
+      quete += 1;
+      
     }
     function ramasseManche(player, manche){
       manche.disableBody(true, true);
-
+      quete += 1;
     }
     function ramassePelle(player, pelle){
-      pelle.disableBody(true, true);
-
+      pelle.hide;
+      quete +=1;
     }
     
   </script>
